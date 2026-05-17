@@ -44,6 +44,13 @@ public class Establishment {
     @Column(name = "is_open")
     private Boolean isOpen;
 
+    // ── NEW: URL pointing to the establishment's cover photo ──
+    // Store a full URL (e.g. from Supabase Storage, S3, or Cloudinary).
+    // Run the migration below before deploying:
+    //   ALTER TABLE establishments ADD COLUMN photo_url TEXT;
+    @Column(name = "photo_url", columnDefinition = "TEXT")
+    private String photoUrl;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

@@ -25,11 +25,11 @@ public class EstablishmentService {
 
     // ── Find nearby by GPS ────────────────────────────────────
     public List<EstablishmentResponse> findNearby(NearbyRequest req) {
-        double   lat      = req.getLatitude();
-        double   lng      = req.getLongitude();
-        double   radius   = req.getRadiusKm()  != null ? req.getRadiusKm()  : 10.0;
-        int      limit    = req.getLimit()      != null ? req.getLimit()     : 50;
-        String   type     = req.getType();
+        double lat    = req.getLatitude();
+        double lng    = req.getLongitude();
+        double radius = req.getRadiusKm() != null ? req.getRadiusKm() : 10.0;
+        int    limit  = req.getLimit()    != null ? req.getLimit()    : 50;
+        String type   = req.getType();
 
         List<Establishment> results;
 
@@ -91,6 +91,8 @@ public class EstablishmentService {
                 .isOpen(e.getIsOpen())
                 .distanceKm(distanceKm != null ?
                         Math.round(distanceKm * 100.0) / 100.0 : null)
+                // ── NEW ──────────────────────────────────────────
+                .photoUrl(e.getPhotoUrl())
                 .build();
     }
 

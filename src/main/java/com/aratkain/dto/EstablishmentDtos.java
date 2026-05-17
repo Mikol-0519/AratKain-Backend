@@ -10,19 +10,24 @@ public class EstablishmentDtos {
     // ── Establishment response (for map pins + list) ──────────
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class EstablishmentResponse {
-        private Long   establishmentId;
-        private String name;
-        private String description;
-        private String estabType;
-        private String phone;
-        private String address;
-        private String city;
-        private Double latitude;
-        private Double longitude;
-        private Double averageRating;
+        private Long    establishmentId;
+        private String  name;
+        private String  description;
+        private String  estabType;
+        private String  phone;
+        private String  address;
+        private String  city;
+        private Double  latitude;
+        private Double  longitude;
+        private Double  averageRating;
         private Integer reviewCount;
         private Boolean isOpen;
-        private Double distanceKm;   // only set for nearby searches
+        private Double  distanceKm;    // only set for nearby searches
+
+        // ── NEW: cover photo URL ──────────────────────────────
+        // Null when not yet uploaded. Android side checks for null
+        // and hides the ImageView gracefully when absent.
+        private String  photoUrl;
     }
 
     // ── Nearby search request ─────────────────────────────────
@@ -39,7 +44,7 @@ public class EstablishmentDtos {
         @DecimalMax(value = "180.0",  message = "Invalid longitude")
         private Double longitude;
 
-        // Default 10km radius
+        // Default 10 km radius
         private Double  radiusKm = 10.0;
 
         // Optional filter: cafe | restaurant | bar
