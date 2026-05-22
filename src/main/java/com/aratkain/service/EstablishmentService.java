@@ -40,10 +40,16 @@ public class EstablishmentService {
         }
 
         return results.stream()
+                // FIX: skip establishments that have no location data.
+                // Previously these were mapped with lat/lng = 0.0 (Gulf of Guinea),
+                // producing bogus distance values and misplaced map pins on the client.
+                .filter(e -> e.getLocation() != null
+                        && e.getLocation().getLatitude()  != null
+                        && e.getLocation().getLongitude() != null)
                 .map(e -> toResponse(e, calcDistance(
                         lat, lng,
-                        e.getLocation() != null ? e.getLocation().getLatitude()  : 0,
-                        e.getLocation() != null ? e.getLocation().getLongitude() : 0
+                        e.getLocation().getLatitude(),
+                        e.getLocation().getLongitude()
                 )))
                 .collect(Collectors.toList());
     }
@@ -91,7 +97,6 @@ public class EstablishmentService {
                 .isOpen(e.getIsOpen())
                 .distanceKm(distanceKm != null ?
                         Math.round(distanceKm * 100.0) / 100.0 : null)
-                // ── NEW ──────────────────────────────────────────
                 .photoUrl(e.getPhotoUrl())
                 .build();
     }
