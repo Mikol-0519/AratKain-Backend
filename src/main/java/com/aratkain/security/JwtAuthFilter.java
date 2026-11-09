@@ -33,15 +33,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     FilterChain         filterChain)
             throws ServletException, IOException {
 
-        response.setHeader("Access-Control-Allow-Origin", request.getHeader("Origin"));
-        response.setHeader("Access-Control-Allow-Credentials", "true");
-        response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
-        response.setHeader("Access-Control-Allow-Headers", "*");
-
-        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-            response.setStatus(HttpServletResponse.SC_OK);
-            return;
-        }
+        // NOTE: CORS is handled centrally by SecurityConfig
+        // (corsConfigurationSource) - never set CORS headers manually here; a
+        // reflected Access-Control-Allow-Origin would defeat that filter.
 
 
         final String authHeader = request.getHeader("Authorization");
