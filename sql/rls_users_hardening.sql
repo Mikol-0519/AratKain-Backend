@@ -146,3 +146,28 @@ rollback;
 --   POST /rest/v1/rpc/username_taken  {username_to_check:"x"} → 200 true/false
 -- ============================================================================
 
+
+-- ============================================================================
+-- PART 2 — DROP STALE POLICIES ON public.users
+-- (added after the PART 0 policy inventory exposed leftovers)
+--
+-- Postgres OR-joins permissive policies for the same command. The leftover
+-- "Anyone can check if email exists" (SELECT, qual TRUE, {public}) would let
+-- ANY authenticated user read the whole users directory despite the grants
+-- fix on anon. It is dead code: no client does email lookups anymore (the
+-- username_taken RPC replaced the old enumerating flows). The three
+-- "Users can … own …" {public} policies are superseded duplicates of the
+-- hardening own-row policies.
+-- ============================================================================
+
+drop policy if exists "Anyone can check if email exists" on public.users;
+drop policy if exists "Users can insert own profile"      on public.users;
+drop policy if exists "Users can read own profile"        on public.users;
+drop policy if exists "Users can update own profile"      on public.users;
+
+-- Verification: re-run the PART 0 "existing policies" query afterwards.
+-- public.users must then show EXACTLY these three and nothing else:
+--   users: authenticated select own row
+--   users: authenticated insert own row
+--   users: authenticated update own row
+
