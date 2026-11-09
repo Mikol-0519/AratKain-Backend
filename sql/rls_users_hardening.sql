@@ -121,11 +121,28 @@ commit;
 
 
 -- ============================================================================
--- AFTER RUNNING: verify
---   1. anon directory scrape is dead:
---      select count(*) from public.users; -- as postgres (bypasses RLS) still works
---      -- and from any HTTP client with only the anon key:
---      --   GET /rest/v1/users → error (permission denied), NO rows
---   2. register still works in web + Android (username check → new RPC)
---   3. login/profile/avatar flows behave as before
+-- AFTER RUNNING — verification block (RUNNABLE; select each numbered part)
 -- ============================================================================
+
+-- 1) As postgres (the SQL Editor role) — must STILL return the full row count
+--    (owners bypass RLS):
+select count(*) from public.users;
+
+-- 2) Prove the anon role sees NOTHING now. Must return ERROR
+--    (permission denied — grants revoked) or 0 rows. NEVER the full count.
+begin;
+set local role anon;
+select count(*) from public.users;
+rollback;
+
+-- 3) The username RPC must work as anon:
+begin;
+set local role anon;
+select public.username_taken('mikel');   -- expect: true
+rollback;
+
+-- Additional HTTP-level proof (optional — I can run this on request):
+--   GET  /rest/v1/users        with only the anon key  → no rows / 4xx
+--   POST /rest/v1/rpc/username_taken  {username_to_check:"x"} → 200 true/false
+-- ============================================================================
+
