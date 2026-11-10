@@ -1,0 +1,39 @@
+# Keeps the Render free-tier backend awake.
+#
+# Why: Render sleeps instances after ~15 minutes without traffic; the first
+# visitor then waits 1-2 minutes ("cold start"). A ping every 10 minutes keeps
+# the instance warm so it is already up whenever anyone opens the app.
+#
+# Cost accounting: this repo is public, so the runner minutes are free. The
+# backend free tier allows ~750 instance-hours/month; being warm 24/7 uses
+# ~730h - inside the cap.
+#
+# NOTE: GitHub automatically disables scheduled workflows after ~60 days of
+# repository inactivity. Any push to this repo re-enables them (or use the
+# "Run workflow" button under Actions).
+#
+# The URL is hardcoded on purpose: it is not a secret - it already lives in
+# vercel.json and in the Android app source.
+
+name: Keep Render backend awake
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"   # every 10 minutes (Render sleep window is 15 min)
+  workflow_dispatch: {}      # manual trigger button, useful to test/verify
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Ping /api/auth/health
+        run: |
+          URL="https://aratkain-backend.onrender.com/api/auth/health"
+          STATUS=$(curl -sS --max-time 90 -o /dev/null -w "%{http_code}" "$URL" || echo "000")
+          echo "health responded: HTTP ${STATUS}"
+          # Soft fail: a still-cold instance is retried by the next tick.
+          [ "$STATUS" = "200" ] || echo "::warning::backend not awake yet (${STATUS}); next tick retries"
